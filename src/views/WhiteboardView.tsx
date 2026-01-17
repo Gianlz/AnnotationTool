@@ -151,7 +151,7 @@ export const WhiteboardView = () => {
       handleMouseMove(x, y);
   };
 
-  const onMouseUp = (e: React.MouseEvent) => {
+  const onMouseUp = () => {
       if (isPanning) {
           setIsPanning(false);
       }
