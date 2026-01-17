@@ -17,6 +17,14 @@ A minimalist, Excalidraw-inspired whiteboard application for creating diagrams, 
 - **Theming** — Light and dark mode with architectural aesthetics
 - **i18n** — Localization support built in
 
+## Showcase
+
+- Whiteboard (OnProgress)
+<img width="1171" height="754" alt="image" src="https://github.com/user-attachments/assets/98a81c05-468f-4c41-992f-cf6bea4314cc" />
+  
+- Kanban (OnProgress)
+<img width="1447" height="456" alt="image" src="https://github.com/user-attachments/assets/0a7d2116-7b14-4945-8f3f-dfc4a47d9005" />
+
 ## Quick Start
 
 ```bash
