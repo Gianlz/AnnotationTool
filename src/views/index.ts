@@ -1,2 +1,2 @@
-export { };
-// This file can export views/pages
+export { WhiteboardView } from './WhiteboardView';
+export { KanbanView } from './KanbanView';

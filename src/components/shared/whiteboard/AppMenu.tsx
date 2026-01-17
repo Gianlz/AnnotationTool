@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -9,21 +9,30 @@ import {
   FolderOpen as FolderOpenIcon,
   DarkMode,
   LightMode,
+  Dashboard as DashboardIcon,
+  ViewKanban as ViewKanbanIcon,
 } from '@mui/icons-material';
 import { useThemeContext } from '../../../context/ThemeContext';
+import { useViewContext } from '../../../context/ViewContext';
 
 export const AppMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { mode, toggleTheme } = useThemeContext();
+  const { currentView, setView } = useViewContext();
   const open = Boolean(anchorEl);
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setAnchorEl(null);
-  };
+  }, []);
+
+  const handleNavigate = useCallback((view: 'whiteboard' | 'kanban') => {
+    setView(view);
+    handleClose();
+  }, [setView, handleClose]);
 
   return (
     <>
@@ -70,6 +79,38 @@ export const AppMenu: React.FC = () => {
           }
         }}
       >
+        {/* Views Navigation Section */}
+        <MenuItem
+          onClick={() => handleNavigate('whiteboard')}
+          selected={currentView === 'whiteboard'}
+          sx={{
+            '&.Mui-selected': {
+              bgcolor: mode === 'light' ? 'nebula.concrete' : 'rgba(255,255,255,0.08)',
+            },
+          }}
+        >
+          <ListItemIcon>
+            <DashboardIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Whiteboard</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => handleNavigate('kanban')}
+          selected={currentView === 'kanban'}
+          sx={{
+            '&.Mui-selected': {
+              bgcolor: mode === 'light' ? 'nebula.concrete' : 'rgba(255,255,255,0.08)',
+            },
+          }}
+        >
+          <ListItemIcon>
+            <ViewKanbanIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Kanban</ListItemText>
+        </MenuItem>
+        <Divider sx={{ my: 0.5 }} />
+
+        {/* File Operations */}
         <MenuItem onClick={handleClose}>
           <ListItemIcon>
             <FolderOpenIcon fontSize="small" />
@@ -112,5 +153,3 @@ export const AppMenu: React.FC = () => {
     </>
   );
 };
-
-
