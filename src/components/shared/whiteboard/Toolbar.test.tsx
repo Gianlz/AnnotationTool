@@ -15,8 +15,8 @@ describe('Toolbar Component', () => {
     
     // Get only direct buttons within the paper, not duplicates from tooltips
     const buttons = within(paper as HTMLElement).getAllByRole('button');
-    // 7 tools in the list
-    expect(buttons.length).toBe(7);
+    // 7 tools + 1 'More' button = 8 buttons
+    expect(buttons.length).toBe(8);
   });
 
   it('should call setTool when a tool is clicked', () => {

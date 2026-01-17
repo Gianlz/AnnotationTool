@@ -81,6 +81,41 @@ export const WhiteboardView = () => {
         case 'rectangle':
             rc.rectangle(x, y, width, height, { ...options, strokeWidth: element.strokeWidth, fill: backgroundColor !== 'transparent' ? backgroundColor : undefined, fillStyle: 'hachure' });
             break;
+        case 'diamond':
+            rc.polygon([
+                [x + width / 2, y],
+                [x + width, y + height / 2],
+                [x + width / 2, y + height],
+                [x, y + height / 2]
+            ], { ...options, strokeWidth: element.strokeWidth, fill: backgroundColor !== 'transparent' ? backgroundColor : undefined, fillStyle: 'hachure' });
+            break;
+        case 'database': {
+             const ry = height * 0.15;
+             // Top Ellipse
+             rc.ellipse(x + width / 2, y + ry, width, ry * 2, { ...options, strokeWidth: element.strokeWidth, fill: backgroundColor !== 'transparent' ? backgroundColor : undefined, fillStyle: 'hachure' });
+             // Bottom Ellipse
+             rc.ellipse(x + width / 2, y + height - ry, width, ry * 2, { ...options, strokeWidth: element.strokeWidth, fill: backgroundColor !== 'transparent' ? backgroundColor : undefined, fillStyle: 'hachure' });
+             // Sides
+             rc.line(x, y + ry, x, y + height - ry, { ...options, strokeWidth: element.strokeWidth });
+             rc.line(x + width, y + ry, x + width, y + height - ry, { ...options, strokeWidth: element.strokeWidth });
+             break;
+        }
+        case 'cloud': {
+             // Simple cloud made of ellipses
+             // Draw filled parts first if background
+             const fill = backgroundColor !== 'transparent' ? backgroundColor : undefined;
+             const opts = { ...options, strokeWidth: element.strokeWidth, fill, fillStyle: 'hachure' };
+             
+             // Center
+             rc.ellipse(x + width * 0.5, y + height * 0.55, width * 0.7, height * 0.6, opts);
+             // Left
+             rc.ellipse(x + width * 0.25, y + height * 0.6, width * 0.4, height * 0.5, opts);
+             // Right
+             rc.ellipse(x + width * 0.75, y + height * 0.6, width * 0.4, height * 0.5, opts);
+             // Top
+             rc.ellipse(x + width * 0.5, y + height * 0.35, width * 0.5, height * 0.5, opts);
+             break;
+        }
         case 'circle':
             rc.ellipse(x + width / 2, y + height / 2, width, height, { ...options, strokeWidth: element.strokeWidth, fill: backgroundColor !== 'transparent' ? backgroundColor : undefined, fillStyle: 'hachure' });
             break;

@@ -26,6 +26,9 @@ describe('elementUtils', () => {
         opacity: 100,
         seed: expect.any(Number),
         points: [{ x: 0, y: 0 }, { x: 100, y: 100 }],
+        text: '',
+        fontFamily: 'Montserrat',
+        fontSize: 24,
       });
     });
 

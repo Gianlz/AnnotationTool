@@ -53,7 +53,10 @@ const isWithinElement = (x: number, y: number, element: WhiteboardElement): bool
 
   switch (type) {
     case 'rectangle':
-    case 'text': {
+    case 'text':
+    case 'diamond':
+    case 'database':
+    case 'cloud': {
       const minX = Math.min(x1, x2);
       const maxX = Math.max(x1, x2);
       const minY = Math.min(y1, y2);
@@ -108,7 +111,14 @@ export const getElementAtPosition = (
 
 export const adjustElementCoordinates = (element: WhiteboardElement): WhiteboardElement => {
     const { type, x, y, width, height } = element;
-    if (type === 'rectangle' || type === 'circle' || type === 'text') {
+    if (
+        type === 'rectangle' || 
+        type === 'circle' || 
+        type === 'text' || 
+        type === 'diamond' || 
+        type === 'database' || 
+        type === 'cloud'
+    ) {
         const minX = Math.min(x, x + width);
         const maxX = Math.max(x, x + width);
         const minY = Math.min(y, y + height);

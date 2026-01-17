@@ -9,7 +9,12 @@ import {
   TextFields as TextIcon,
   Edit as PencilIcon,
   NearMe as SelectionIcon,
+  MoreVert as MoreIcon,
+  Diamond as DiamondIcon,
+  Storage as DatabaseIcon,
+  Cloud as CloudIcon,
 } from '@mui/icons-material';
+import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import type { WhiteboardTool } from '../../../types/whiteboard';
 
 interface ToolbarProps {
@@ -27,7 +32,29 @@ const tools: { id: WhiteboardTool; icon: React.ReactNode; label: string }[] = [
   { id: 'pencil', icon: <PencilIcon />, label: 'Pencil' },
 ];
 
+const extraTools: { id: WhiteboardTool; icon: React.ReactNode; label: string }[] = [
+  { id: 'diamond', icon: <DiamondIcon fontSize="small" />, label: 'Diamond' },
+  { id: 'database', icon: <DatabaseIcon fontSize="small" />, label: 'Database' },
+  { id: 'cloud', icon: <CloudIcon fontSize="small" />, label: 'Cloud' },
+];
+
 export const Toolbar: React.FC<ToolbarProps> = ({ activeTool, setTool }) => {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleExtraToolClick = (id: WhiteboardTool) => {
+      setTool(id);
+      handleMenuClose();
+  };
+
+  const isExtraToolActive = extraTools.some(t => t.id === activeTool);
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
@@ -93,6 +120,61 @@ export const Toolbar: React.FC<ToolbarProps> = ({ activeTool, setTool }) => {
           </IconButton>
         </Tooltip>
       ))}
+      
+      <Tooltip title="More Shapes">
+        <IconButton
+          onClick={handleMenuClick}
+          sx={{
+            color: isExtraToolActive ? '#FFFFFF' : '#111111',
+            backgroundColor: isExtraToolActive ? '#FF4D00' : 'transparent',
+            '&:hover': {
+              backgroundColor: isExtraToolActive ? '#E04400' : '#F5F5F5',
+            },
+            transition: 'all 0.2s',
+          }}
+        >
+          <MoreIcon />
+        </IconButton>
+      </Tooltip>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleMenuClose}
+        PaperProps={{
+            elevation: 0,
+            sx: {
+                mt: 1.5,
+                border: '1px solid #F5F5F5',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                '& .MuiMenuItem-root': {
+                    typography: 'body2',
+                    fontFamily: 'Montserrat',
+                }
+            }
+        }}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+      >
+        {extraTools.map((tool) => (
+            <MenuItem 
+                key={tool.id} 
+                onClick={() => handleExtraToolClick(tool.id)}
+                selected={activeTool === tool.id}
+                sx={{
+                    '&.Mui-selected': {
+                        backgroundColor: '#F5F5F5',
+                        '&:hover': { backgroundColor: '#EEEEEE' },
+                    }
+                }}
+            >
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                    {tool.icon}
+                </ListItemIcon>
+                <ListItemText primary={tool.label} />
+            </MenuItem>
+        ))}
+      </Menu>
     </Paper>
   );
 };

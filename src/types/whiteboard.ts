@@ -1,7 +1,7 @@
 
-export type WhiteboardTool = 'selection' | 'rectangle' | 'circle' | 'line' | 'arrow' | 'text' | 'pencil';
+export type WhiteboardTool = 'selection' | 'rectangle' | 'circle' | 'line' | 'arrow' | 'text' | 'pencil' | 'diamond' | 'database' | 'cloud';
 
-export type ElementType = 'rectangle' | 'circle' | 'line' | 'arrow' | 'text' | 'pencil';
+export type ElementType = 'rectangle' | 'circle' | 'line' | 'arrow' | 'text' | 'pencil' | 'diamond' | 'database' | 'cloud';
 
 export type Point = {
   x: number;
