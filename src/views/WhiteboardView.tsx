@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import rough from 'roughjs';
 import { useWhiteboard } from '../hooks/useWhiteboard';
 import { Toolbar } from '../components/shared/whiteboard/Toolbar';
+import { AppMenu } from '../components/shared/whiteboard/AppMenu';
 
 export const WhiteboardView = () => {
   const { 
@@ -126,7 +127,8 @@ export const WhiteboardView = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100vh', overflow: 'hidden', bgcolor: '#FFFFFF' }}>
+    <Box sx={{ width: '100%', height: '100vh', overflow: 'hidden', bgcolor: '#FFFFFF', position: 'relative' }}>
+      <AppMenu />
       <Toolbar 
         activeTool={appState.tool} 
         setTool={(tool) => setAppState(prev => ({ ...prev, tool }))} 
