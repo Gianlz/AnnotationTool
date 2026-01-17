@@ -60,15 +60,15 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
         transform: 'translateY(-50%)', // Center vertically
         display: 'flex',
         flexDirection: 'column',
-        gap: 3,
-        p: 2,
+        gap: 2,
+        p: 1.5,
         borderRadius: 2,
         backgroundColor: 'background.paper',
         border: 1,
         borderColor: 'divider',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
         zIndex: 90,
-        width: '260px',
+        width: '200px',
         maxHeight: '80vh',
         overflowY: 'auto'
       }}
