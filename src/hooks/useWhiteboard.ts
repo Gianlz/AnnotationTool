@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { 
   WhiteboardElement, 
   WhiteboardTool, 
@@ -37,10 +37,12 @@ export const useWhiteboard = () => {
   const [action, setAction] = useState<ActionType>('none');
   const [selectedElement, setSelectedElement] = useState<WhiteboardElement | null>(null);
   
-  // Ref for current drawing/interaction state to avoid stale closures in callbacks if needed
-  // But useState is fine if we use functional updates correctly.
+  // Ref for drag state
+  const dragInfo = useRef<{
+    startMouse: { x: number, y: number };
+    originalElement: WhiteboardElement | null;
+  }>({ startMouse: { x: 0, y: 0 }, originalElement: null });
   
-  // History
   // History
   const [history, setHistory] = useState<WhiteboardElement[][]>([[]]);
   const [historyStep, setHistoryStep] = useState(0);
@@ -118,17 +120,15 @@ export const useWhiteboard = () => {
 
     if (appState.tool === 'selection') {
       const element = getElementAtPosition(x, y, elements);
-      if (element) {
-        // Determine if resizing or moving based on proximity to corners? 
-        // For simplicity, let's just do moving for now, or assume resize if selected.
-        // If we want resize handles, we check if we clicked a handle.
-        // For this MVP, let's stick to moving or simple selection.
-        
-        // Basic Move Logic
-        // const offsetX = x - element.x;
-        // const offsetY = y - element.y;
-        
+      if (element) {        
         setSelectedElement({ ...element });
+        
+        // Store drag start info
+        dragInfo.current = {
+            startMouse: { x, y },
+            originalElement: element
+        };
+
         // Update selection state and also sync tool properties to selected element for UI feedback
         setAppState(prev => ({ 
             ...prev, 
@@ -142,10 +142,10 @@ export const useWhiteboard = () => {
             }
         }));
         setAction('moving');
-        // We'd store offset here if using refs
       } else {
          setAppState(prev => ({ ...prev, selection: null }));
          setSelectedElement(null);
+         dragInfo.current = { startMouse: { x: 0, y: 0 }, originalElement: null };
       }
     } else {
       const id = generateId();
@@ -172,11 +172,7 @@ export const useWhiteboard = () => {
       const index = elements.length - 1;
       if(index < 0) return;
       
-      const { x: x1, y: y1, type, points } = elements[index]; // read from element in state to keep properties?
-      // Wait, updateElement re-creates the element using createElement. 
-      // If we don't pass all properties, they reset to default!
-      // We must pass the properties from the EXISTING element (or appState).
-      // Let's use appState properties for the element being drawn.
+      const { x: x1, y: y1, type, points } = elements[index]; 
       
       if (type === 'pencil') {
         const newPoints = [...(points || []), { x, y }];
@@ -186,11 +182,6 @@ export const useWhiteboard = () => {
             return copy;
         });
       } else {
-        // Update element needs to preserve properties.
-        // The original updateElement function only accepted simplified options.
-        // Let's inline the logic here to better control it or update updateElement signature.
-        // Inlining is safer as updateElement was a bit rigid.
-        
         const updatedElement = createElement(
             elements[index].id, 
             x1, y1, x, y, type, 
@@ -201,14 +192,22 @@ export const useWhiteboard = () => {
         );
       }
       
-    } else if (action === 'moving' && selectedElement) {
-        // const { id, x: startX, y: startY, width, height, type, strokeColor } = selectedElement;
-        // This is tricky without ref for start click position.
-        // Simplification: We need the delta. 
-        // Real implementation requires storing the initial click position in a ref.
+    } else if (action === 'moving' && dragInfo.current.originalElement) {
+        const { startMouse, originalElement } = dragInfo.current;
+        const dx = x - startMouse.x;
+        const dy = y - startMouse.y;
         
-        // Let's assume for MVP dragging is "center to mouse" or need to add start offset ref.
-        // I will add a REF for interaction start state to make this reliable.
+        const updatedElement = {
+            ...originalElement,
+            x: originalElement.x + dx,
+            y: originalElement.y + dy,
+            points: originalElement.points?.map(p => ({ x: p.x + dx, y: p.y + dy })) || undefined
+        };
+
+        setElements(prev => prev.map(el => el.id === updatedElement.id ? updatedElement : el));
+        // Keep selected element updated so we can see the bounding box move if we had one, 
+        // or for any other derived state
+        setSelectedElement(updatedElement);
     }
   };
 
@@ -234,11 +233,8 @@ export const useWhiteboard = () => {
       }
       setAction('none');
       setSelectedElement(null);
+      dragInfo.current = { startMouse: { x: 0, y: 0 }, originalElement: null };
   };
-  
-  // Note: This Hook is incomplete without refs for drag offsets.
-  // I will refactor to use refs for interaction state in the next step or keep it here if I can edit.
-  // I'll leave the basic structure for now and refine in the View or a refined Hook file.
   
   return {
     elements,
