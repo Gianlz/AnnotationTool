@@ -1,73 +1,54 @@
-# React + TypeScript + Vite
+# Annotation Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimalist, Excalidraw-inspired whiteboard application for creating diagrams, sketches, and annotations with a hand-drawn aesthetic.
 
-Currently, two official plugins are available:
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-Rolldown-646CFF?logo=vite)
+![Bun](https://img.shields.io/badge/Bun-runtime-FBF0DF?logo=bun)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **Whiteboard Canvas** — Draw shapes, lines, arrows, text, and freehand sketches
+- **Hand-drawn Style** — RoughJS-powered rendering for a natural, sketch-like feel
+- **Kanban View** — Organize tasks and ideas on a drag-and-drop board
+- **Pan & Zoom** — Navigate infinite canvas with mouse wheel and middle-click
+- **Undo / Redo** — Full history support for all canvas operations
+- **Theming** — Light and dark mode with architectural aesthetics
+- **i18n** — Localization support built in
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quick Start
 
-## Expanding the ESLint configuration
+```bash
+# Install dependencies
+bun install
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Start development server
+bun run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| Command           | Description              |
+| :---------------- | :----------------------- |
+| `bun run dev`     | Start development server |
+| `bun run build`   | Build for production     |
+| `bun run preview` | Preview production build |
+| `bun run check`   | Type-check and lint      |
+| `bun run lint`    | Run ESLint               |
+
+## Tech Stack
+
+- **Runtime** — Bun
+- **Framework** — React 19
+- **Language** — TypeScript
+- **Bundler** — Vite (Rolldown)
+- **UI** — Material UI
+- **Drawing** — RoughJS
+- **Styling** — Emotion
+
+## License
+
+MIT
