@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { 
   WhiteboardElement, 
   WhiteboardTool, 
@@ -54,23 +54,23 @@ export const useWhiteboard = () => {
       setHistoryStep(newHistory.length - 1);
   };
 
-  const undo = () => {
+  const undo = useCallback(() => {
     if (historyStep > 0) {
       const newStep = historyStep - 1;
       setHistoryStep(newStep);
       setElements(history[newStep]);
     }
-  };
+  }, [historyStep, history]);
 
-  const redo = () => {
+  const redo = useCallback(() => {
     if (historyStep < history.length - 1) {
       const newStep = historyStep + 1;
       setHistoryStep(newStep);
       setElements(history[newStep]);
     }
-  };
+  }, [historyStep, history]);
 
-  const updateToolProperty = (key: keyof ToolProperties, value: any) => {
+  const updateToolProperty = (key: keyof ToolProperties, value: string | number) => {
       setAppState(prev => {
           const newProps = { ...prev.toolProperties, [key]: value };
           
@@ -114,7 +114,7 @@ export const useWhiteboard = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [history, historyStep]);
+  }, [history, historyStep, undo, redo]);
 
   const handleMouseDown = (x: number, y: number) => {
 

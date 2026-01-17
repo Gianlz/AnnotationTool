@@ -6,7 +6,7 @@ import type { WhiteboardTool, ToolProperties } from '../../../types/whiteboard';
 interface ToolPropertiesSidebarProps {
   activeTool: WhiteboardTool;
   properties: ToolProperties;
-  onChange: (key: keyof ToolProperties, value: any) => void;
+  onChange: (key: keyof ToolProperties, value: string | number) => void;
 }
 
 const COLORS = [
