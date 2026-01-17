@@ -5,6 +5,7 @@ import rough from 'roughjs';
 import { useWhiteboard } from '../hooks/useWhiteboard';
 import { Toolbar } from '../components/shared/whiteboard/Toolbar';
 import { AppMenu } from '../components/shared/whiteboard/AppMenu';
+import { ToolPropertiesSidebar } from '../components/shared/whiteboard/ToolPropertiesSidebar';
 
 export const WhiteboardView = () => {
   const { 
@@ -14,6 +15,7 @@ export const WhiteboardView = () => {
     handleMouseDown, 
     handleMouseMove, 
     handleMouseUp,
+    updateToolProperty
   } = useWhiteboard();
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -57,53 +59,55 @@ export const WhiteboardView = () => {
 
     elements.forEach(element => {
       const { 
-          type, x, y, width, height, strokeColor, backgroundColor, opacity, points, seed 
+          type, x, y, width, height, strokeColor, backgroundColor, opacity, points, seed, fontFamily, fontSize
       } = element;
       
       const options = {
           seed,
           stroke: strokeColor,
-          strokeWidth: 2 / scale, // Scale stroke width? Optional. Let's keep it constant in world space (so it zooms). "2" implies world units.
+          strokeWidth: element.strokeWidth / scale, // ADJUSTED: strokeWidth logic
+          // roughjs options
           roughness: 1,
-          opacity: opacity,
-          fill: backgroundColor !== 'transparent' ? backgroundColor : undefined,
-          fillStyle: 'hachure', 
+          opacity: opacity, // roughjs might not handle opacity in options directly, check roughjs docs? 
+          // usually globalAlpha handles it.
+          // fill: backgroundColor !== 'transparent' ? backgroundColor : undefined,
+          // fillStyle: 'hachure', 
       };
 
-      // Handle opacity
+      // Handle opacity contextually
       ctx.globalAlpha = opacity / 100;
 
       switch (type) {
         case 'rectangle':
-            rc.rectangle(x, y, width, height, options);
+            rc.rectangle(x, y, width, height, { ...options, strokeWidth: element.strokeWidth, fill: backgroundColor !== 'transparent' ? backgroundColor : undefined, fillStyle: 'hachure' });
             break;
         case 'circle':
-            rc.ellipse(x + width / 2, y + height / 2, width, height, options);
+            rc.ellipse(x + width / 2, y + height / 2, width, height, { ...options, strokeWidth: element.strokeWidth, fill: backgroundColor !== 'transparent' ? backgroundColor : undefined, fillStyle: 'hachure' });
             break;
         case 'line':
-            rc.line(x, y, x + width, y + height, options);
+            rc.line(x, y, x + width, y + height, { ...options, strokeWidth: element.strokeWidth });
             break;
         case 'arrow': {
-            rc.line(x, y, x + width, y + height, options);
+            rc.line(x, y, x + width, y + height, { ...options, strokeWidth: element.strokeWidth });
             const angle = Math.atan2(height, width);
 
             // Let's use strict numbers and let transform handle it.
             const headLenFixed = 20;
             const endX = x + width;
             const endY = y + height;
-            rc.line(endX, endY, endX - headLenFixed * Math.cos(angle - Math.PI / 6), endY - headLenFixed * Math.sin(angle - Math.PI / 6), options);
-            rc.line(endX, endY, endX - headLenFixed * Math.cos(angle + Math.PI / 6), endY - headLenFixed * Math.sin(angle + Math.PI / 6), options);
+            rc.line(endX, endY, endX - headLenFixed * Math.cos(angle - Math.PI / 6), endY - headLenFixed * Math.sin(angle - Math.PI / 6), { ...options, strokeWidth: element.strokeWidth });
+            rc.line(endX, endY, endX - headLenFixed * Math.cos(angle + Math.PI / 6), endY - headLenFixed * Math.sin(angle + Math.PI / 6), { ...options, strokeWidth: element.strokeWidth });
             break;
         }
         case 'text':
             ctx.textBaseline = 'top';
-            ctx.font = '24px Montserrat'; 
+            ctx.font = `${fontSize || 24}px ${fontFamily || 'Montserrat'}`; 
             ctx.fillStyle = strokeColor;
             ctx.fillText(element.text || 'Text', x, y);
             break;
         case 'pencil':
              if (points && points.length) {
-                 rc.linearPath(points.map(p => [p.x, p.y]), options);
+                 rc.linearPath(points.map(p => [p.x, p.y]), { ...options, strokeWidth: element.strokeWidth });
              }
              break;
         default:
@@ -145,9 +149,6 @@ export const WhiteboardView = () => {
 
       const { x, y } = getMouseCoordinates(e.clientX, e.clientY);
       
-      // Update cursor if hovering over elements (using the getElementAtPosition logic from hook indirectly or simpler check?)
-      // We removed hook's cursor logic. View can handle it if needed. 
-      // For now just pass coords.
       handleMouseMove(x, y);
   };
 
@@ -188,11 +189,17 @@ export const WhiteboardView = () => {
         activeTool={appState.tool} 
         setTool={(tool) => setAppState(prev => ({ ...prev, tool }))} 
       />
+      <ToolPropertiesSidebar 
+         activeTool={appState.tool}
+         properties={appState.toolProperties}
+         onChange={updateToolProperty}
+      />
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
         onMouseDown={onMouseDown}
+
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onWheel={onWheel}

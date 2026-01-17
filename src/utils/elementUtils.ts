@@ -11,7 +11,14 @@ export const createElement = (
   x2: number,
   y2: number,
   type: ElementType,
-  options?: { strokeColor?: string; backgroundColor?: string }
+  options?: { 
+    strokeColor?: string; 
+    backgroundColor?: string;
+    strokeWidth?: number;
+    opacity?: number;
+    fontFamily?: string;
+    fontSize?: number;
+  }
 ): WhiteboardElement => {
   // const roughElement = null; // We will generate the visual part in the renderer
   const width = x2 - x;
@@ -26,11 +33,14 @@ export const createElement = (
     height,
     strokeColor: options?.strokeColor || '#111111',
     backgroundColor: options?.backgroundColor || 'transparent',
-    strokeWidth: 2,
+    strokeWidth: options?.strokeWidth ?? 2,
     roughness: 1,
-    opacity: 100,
+    opacity: options?.opacity ?? 100,
     seed: Math.floor(Math.random() * 2 ** 31),
     points: [{ x, y }, { x: x2, y: y2 }], // Initial points for line/arrow/pencil
+    text: '',
+    fontFamily: options?.fontFamily || 'Montserrat',
+    fontSize: options?.fontSize ?? 24,
   };
 };
 

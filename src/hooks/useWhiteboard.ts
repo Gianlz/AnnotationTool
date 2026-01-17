@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import type { 
   WhiteboardElement, 
   WhiteboardTool, 
-  ElementType
+  ElementType,
+  ToolProperties
 } from '../types/whiteboard';
 import { 
   createElement, 
@@ -20,9 +21,17 @@ export const useWhiteboard = () => {
   const [appState, setAppState] = useState<{
     tool: WhiteboardTool;
     selection: WhiteboardElement | null;
+    toolProperties: ToolProperties;
   }>({
     tool: 'selection',
     selection: null,
+    toolProperties: {
+      strokeColor: '#111111',
+      strokeWidth: 2,
+      opacity: 100,
+      fontFamily: 'Montserrat',
+      fontSize: 24,
+    }
   });
   
   const [action, setAction] = useState<ActionType>('none');
@@ -59,6 +68,31 @@ export const useWhiteboard = () => {
     }
   };
 
+  const updateToolProperty = (key: keyof ToolProperties, value: any) => {
+      setAppState(prev => {
+          const newProps = { ...prev.toolProperties, [key]: value };
+          
+          // If there is a selected element, update it as well
+          if (prev.selection) {
+             const updatedElements = elements.map(el => {
+                 if (el.id === prev.selection!.id) {
+                     return { ...el, [key]: value };
+                 }
+                 return el;
+             });
+             setElements(updatedElements);
+             // Should we save history here? Ideally yes, but maybe debounce it?
+             // For now, let's not save history on every slide change to avoid stack bloat, 
+             // but user might expect undo. Let's save history for discrete changes (like font family), 
+             // but maybe not slider unless we implement proper "commit" or "debounce".
+             // Let's safe history for simplicity.
+             saveHistory(updatedElements);
+          }
+
+          return { ...prev, toolProperties: newProps };
+      });
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
@@ -80,14 +114,6 @@ export const useWhiteboard = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [history, historyStep]);
 
-  const updateElement = (id: string, x: number, y: number, x2: number, y2: number, type: ElementType, options?: { strokeColor?: string }) => {
-    const updatedElement = createElement(id, x, y, x2, y2, type, options);
-    
-    setElements((prevState) => 
-       prevState.map((el) => el.id === id ? { ...updatedElement, seed: el.seed } : el)
-    );
-  };
-
   const handleMouseDown = (x: number, y: number) => {
 
     if (appState.tool === 'selection') {
@@ -103,7 +129,18 @@ export const useWhiteboard = () => {
         // const offsetY = y - element.y;
         
         setSelectedElement({ ...element });
-        setAppState(prev => ({ ...prev, selection: element }));
+        // Update selection state and also sync tool properties to selected element for UI feedback
+        setAppState(prev => ({ 
+            ...prev, 
+            selection: element,
+            toolProperties: {
+                strokeColor: element.strokeColor,
+                strokeWidth: element.strokeWidth,
+                opacity: element.opacity,
+                fontFamily: element.fontFamily || 'Montserrat',
+                fontSize: element.fontSize || 24,
+            }
+        }));
         setAction('moving');
         // We'd store offset here if using refs
       } else {
@@ -114,7 +151,10 @@ export const useWhiteboard = () => {
       const id = generateId();
       const type = appState.tool as ElementType;
       // Start creating element
-      const newElement = createElement(id, x, y, x, y, type, { strokeColor: '#111111' }); // Default color
+      const newElement = createElement(
+          id, x, y, x, y, type, 
+          appState.toolProperties // Pass current properties
+      ); 
       setElements((prevState) => [...prevState, newElement]);
       setSelectedElement(newElement);
       setAction('drawing');
@@ -132,8 +172,12 @@ export const useWhiteboard = () => {
       const index = elements.length - 1;
       if(index < 0) return;
       
-      const { x: x1, y: y1, type, strokeColor, points } = elements[index];
-
+      const { x: x1, y: y1, type, points } = elements[index]; // read from element in state to keep properties?
+      // Wait, updateElement re-creates the element using createElement. 
+      // If we don't pass all properties, they reset to default!
+      // We must pass the properties from the EXISTING element (or appState).
+      // Let's use appState properties for the element being drawn.
+      
       if (type === 'pencil') {
         const newPoints = [...(points || []), { x, y }];
         setElements(prev => {
@@ -142,7 +186,19 @@ export const useWhiteboard = () => {
             return copy;
         });
       } else {
-        updateElement(elements[index].id, x1, y1, x, y, type, { strokeColor });
+        // Update element needs to preserve properties.
+        // The original updateElement function only accepted simplified options.
+        // Let's inline the logic here to better control it or update updateElement signature.
+        // Inlining is safer as updateElement was a bit rigid.
+        
+        const updatedElement = createElement(
+            elements[index].id, 
+            x1, y1, x, y, type, 
+            appState.toolProperties 
+        );
+         setElements((prevState) => 
+           prevState.map((el, i) => i === index ? { ...updatedElement, seed: el.seed } : el)
+        );
       }
       
     } else if (action === 'moving' && selectedElement) {
@@ -195,6 +251,7 @@ export const useWhiteboard = () => {
     handleMouseMove,
     handleMouseUp,
     undo,
-    redo
+    redo,
+    updateToolProperty
   };
 };

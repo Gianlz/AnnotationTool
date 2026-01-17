@@ -22,8 +22,18 @@ export type WhiteboardElement = {
   opacity: number;
   points?: Point[]; // For pencil/lines
   text?: string;    // For text
+  fontFamily?: string;
+  fontSize?: number;
   seed: number;     // For roughjs randomness
   isDeleted?: boolean;
+};
+
+export type ToolProperties = {
+  strokeColor: string;
+  strokeWidth: number;
+  opacity: number;
+  fontFamily: string;
+  fontSize: number;
 };
 
 export type WhiteboardState = {
@@ -32,4 +42,5 @@ export type WhiteboardState = {
   historyStep: number;
   tool: WhiteboardTool;
   selection: string[]; // array of selected element IDs
+  toolProperties?: ToolProperties;
 };
