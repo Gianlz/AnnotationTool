@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { 
   WhiteboardElement, 
   WhiteboardTool, 
@@ -32,16 +32,53 @@ export const useWhiteboard = () => {
   // But useState is fine if we use functional updates correctly.
   
   // History
-  const [history, setHistory] = useState<WhiteboardElement[][]>([]);
+  // History
+  const [history, setHistory] = useState<WhiteboardElement[][]>([[]]);
   const [historyStep, setHistoryStep] = useState(0);
 
   const saveHistory = (newElements: WhiteboardElement[]) => {
-      // If we went back, remove future history
       const prevHistory = history.slice(0, historyStep + 1);
       const newHistory = [...prevHistory, newElements];
       setHistory(newHistory);
       setHistoryStep(newHistory.length - 1);
   };
+
+  const undo = () => {
+    if (historyStep > 0) {
+      const newStep = historyStep - 1;
+      setHistoryStep(newStep);
+      setElements(history[newStep]);
+    }
+  };
+
+  const redo = () => {
+    if (historyStep < history.length - 1) {
+      const newStep = historyStep + 1;
+      setHistoryStep(newStep);
+      setElements(history[newStep]);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [history, historyStep]);
 
   const updateElement = (id: string, x: number, y: number, x2: number, y2: number, type: ElementType, options?: { strokeColor?: string }) => {
     const updatedElement = createElement(id, x, y, x2, y2, type, options);
@@ -157,7 +194,7 @@ export const useWhiteboard = () => {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-    undo: () => {}, // TODO
-    redo: () => {} // TODO
+    undo,
+    redo
   };
 };

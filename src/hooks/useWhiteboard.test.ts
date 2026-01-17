@@ -125,4 +125,59 @@ describe('useWhiteboard Hook', () => {
       expect(result.current.appState.selection).not.toBeNull();
       expect(result.current.appState.selection?.id).toBe(result.current.elements[0].id);
   });
+
+  it('should handle undo and redo', () => {
+    const { result } = renderHook(() => useWhiteboard());
+
+    // 1. Draw Rect 1
+    act(() => {
+        result.current.setAppState(prev => ({ ...prev, tool: 'rectangle' }));
+    });
+    act(() => {
+        result.current.handleMouseDown(0, 0);
+    });
+    act(() => {
+        result.current.handleMouseMove(50, 50);
+    });
+    act(() => {
+        result.current.handleMouseUp();
+    });
+    expect(result.current.elements.length).toBe(1);
+
+    // 2. Draw Rect 2
+    act(() => {
+        result.current.handleMouseDown(100, 100);
+    });
+    act(() => {
+        result.current.handleMouseMove(150, 150);
+    });
+    act(() => {
+        result.current.handleMouseUp();
+    });
+    expect(result.current.elements.length).toBe(2);
+
+    // 3. Undo (Remove Rect 2)
+    act(() => {
+        result.current.undo();
+    });
+    expect(result.current.elements.length).toBe(1);
+
+    // 4. Undo (Remove Rect 1 - back to empty)
+    act(() => {
+        result.current.undo();
+    });
+    expect(result.current.elements.length).toBe(0);
+
+    // 5. Redo (Restore Rect 1)
+    act(() => {
+        result.current.redo();
+    });
+    expect(result.current.elements.length).toBe(1);
+
+    // 6. Redo (Restore Rect 2)
+    act(() => {
+        result.current.redo();
+    });
+    expect(result.current.elements.length).toBe(2);
+  });
 });
