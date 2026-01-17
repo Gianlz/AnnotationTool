@@ -51,10 +51,7 @@ export const useWhiteboard = () => {
     );
   };
 
-  const handleMouseDown = (event: React.MouseEvent, canvasOffset: { x: number, y: number }) => {
-    const { clientX, clientY } = event;
-    const x = clientX - canvasOffset.x;
-    const y = clientY - canvasOffset.y;
+  const handleMouseDown = (x: number, y: number) => {
 
     if (appState.tool === 'selection') {
       const element = getElementAtPosition(x, y, elements);
@@ -87,14 +84,11 @@ export const useWhiteboard = () => {
     }
   };
 
-  const handleMouseMove = (event: React.MouseEvent, canvasOffset: { x: number, y: number }) => {
-    const { clientX, clientY } = event;
-    const x = clientX - canvasOffset.x;
-    const y = clientY - canvasOffset.y;
+  const handleMouseMove = (x: number, y: number) => {
 
     if (appState.tool === 'selection') {
-      const element = getElementAtPosition(x, y, elements);
-      (event.target as HTMLElement).style.cursor = element ? 'move' : 'default'; // detailed cursor logic later
+      // Cursor handling moved to view
+      // const element = getElementAtPosition(x, y, elements);
     }
 
     if (action === 'drawing') {

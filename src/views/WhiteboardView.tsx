@@ -22,6 +22,11 @@ export const WhiteboardView = () => {
   const [width, setWidth] = useState(window.innerWidth);
   const [height, setHeight] = useState(window.innerHeight);
 
+  // Viewport State
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+
   useEffect(() => {
      const handleResize = () => {
          setWidth(window.innerWidth);
@@ -38,9 +43,15 @@ export const WhiteboardView = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Clear canvas
+    // Clear canvas (reset transform first to clear entire screen)
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Apply Viewport Transform
+    ctx.save();
+    ctx.translate(offset.x, offset.y);
+    ctx.scale(scale, scale);
+
     // Create rough canvas
     const rc = rough.canvas(canvas);
 
@@ -52,17 +63,14 @@ export const WhiteboardView = () => {
       const options = {
           seed,
           stroke: strokeColor,
-          strokeWidth: 2,
+          strokeWidth: 2 / scale, // Scale stroke width? Optional. Let's keep it constant in world space (so it zooms). "2" implies world units.
           roughness: 1,
           opacity: opacity,
           fill: backgroundColor !== 'transparent' ? backgroundColor : undefined,
-          fillStyle: 'hachure', // default roughjs fill
+          fillStyle: 'hachure', 
       };
 
       // Handle opacity
-      // roughjs options doesn't have opacity property for the whole shape directly in strict sense, 
-      // but we can set context globalAlpha or use rgba colors.
-      // Let's use context globalAlpha saving/restoring.
       ctx.globalAlpha = opacity / 100;
 
       switch (type) {
@@ -70,29 +78,21 @@ export const WhiteboardView = () => {
             rc.rectangle(x, y, width, height, options);
             break;
         case 'circle':
-            // roughjs ellipse(centerX, centerY, width, height)
             rc.ellipse(x + width / 2, y + height / 2, width, height, options);
             break;
         case 'line':
-            // points[0] is start, points[1] is end
-            // but for simple line type we store x,y,width,height as well for bounding box
-            // Let's stick to using x,y and x+width, y+height or use the points logic if present.
-            // Our utils `createElement` sets x,y,width,height. 
-            // So line is from (x,y) to (x+width, y+height).
             rc.line(x, y, x + width, y + height, options);
             break;
         case 'arrow': {
-            // Draw line
             rc.line(x, y, x + width, y + height, options);
-            // Draw arrow head (simplistic)
             const angle = Math.atan2(height, width);
-            const headLen = 20;
+
+            // Let's use strict numbers and let transform handle it.
+            const headLenFixed = 20;
             const endX = x + width;
             const endY = y + height;
-            // Left wing
-            rc.line(endX, endY, endX - headLen * Math.cos(angle - Math.PI / 6), endY - headLen * Math.sin(angle - Math.PI / 6), options);
-            // Right wing
-            rc.line(endX, endY, endX - headLen * Math.cos(angle + Math.PI / 6), endY - headLen * Math.sin(angle + Math.PI / 6), options);
+            rc.line(endX, endY, endX - headLenFixed * Math.cos(angle - Math.PI / 6), endY - headLenFixed * Math.sin(angle - Math.PI / 6), options);
+            rc.line(endX, endY, endX - headLenFixed * Math.cos(angle + Math.PI / 6), endY - headLenFixed * Math.sin(angle + Math.PI / 6), options);
             break;
         }
         case 'text':
@@ -102,10 +102,7 @@ export const WhiteboardView = () => {
             ctx.fillText(element.text || 'Text', x, y);
             break;
         case 'pencil':
-             // Not implemented fully in utils yet (just creates a dot), wait for point collection update
-             // If we had points: rc.linearPath(points, options)
              if (points && points.length) {
-                 // map points to [x,y] arrays
                  rc.linearPath(points.map(p => [p.x, p.y]), options);
              }
              break;
@@ -115,15 +112,73 @@ export const WhiteboardView = () => {
       ctx.globalAlpha = 1; 
     });
 
-  }, [elements, width, height]);
+    ctx.restore();
+
+  }, [elements, width, height, scale, offset]);
+
+  // Coordinate conversion
+  const getMouseCoordinates = (clientX: number, clientY: number) => {
+      const worldX = (clientX - offset.x) / scale;
+      const worldY = (clientY - offset.y) / scale;
+      return { x: worldX, y: worldY };
+  };
 
   const onMouseDown = (e: React.MouseEvent) => {
-      // Offset if canvas is not top-left 0,0 (it is here)
-      handleMouseDown(e, { x: 0, y: 0 });
+      // Middle Click (button 1) for Panning
+      if (e.button === 1) {
+          setIsPanning(true);
+          return;
+      }
+      
+      const { x, y } = getMouseCoordinates(e.clientX, e.clientY);
+      handleMouseDown(x, y);
   };
   
   const onMouseMove = (e: React.MouseEvent) => {
-      handleMouseMove(e, { x: 0, y: 0 });
+      if (isPanning) {
+          setOffset(prev => ({
+              x: prev.x + e.movementX,
+              y: prev.y + e.movementY
+          }));
+          return;
+      }
+
+      const { x, y } = getMouseCoordinates(e.clientX, e.clientY);
+      
+      // Update cursor if hovering over elements (using the getElementAtPosition logic from hook indirectly or simpler check?)
+      // We removed hook's cursor logic. View can handle it if needed. 
+      // For now just pass coords.
+      handleMouseMove(x, y);
+  };
+
+  const onMouseUp = (e: React.MouseEvent) => {
+      if (isPanning) {
+          setIsPanning(false);
+      }
+      handleMouseUp();
+  };
+
+  const onWheel = (e: React.WheelEvent) => {
+    const scaleBy = 1.05;
+    const direction = e.deltaY < 0 ? 1 : -1;
+    const factor = direction > 0 ? scaleBy : 1 / scaleBy;
+    
+    // Calculate new scale, clamped
+    let newScale = scale * factor;
+    if (newScale < 0.1) newScale = 0.1;
+    if (newScale > 10) newScale = 10;
+
+    // Mouse world config
+    const worldPos = getMouseCoordinates(e.clientX, e.clientY);
+
+    // newOffset = mouse - world * newScale
+    const newOffset = {
+        x: e.clientX - worldPos.x * newScale,
+        y: e.clientY - worldPos.y * newScale
+    };
+
+    setScale(newScale);
+    setOffset(newOffset);
   };
 
   return (
@@ -139,8 +194,9 @@ export const WhiteboardView = () => {
         height={height}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
-        onMouseUp={handleMouseUp}
-        style={{ touchAction: 'none' }}
+        onMouseUp={onMouseUp}
+        onWheel={onWheel}
+        style={{ touchAction: 'none', cursor: isPanning ? 'grabbing' : 'default' }}
       >
         Canvas not supported
       </canvas>
