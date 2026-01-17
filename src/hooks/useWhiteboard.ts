@@ -12,6 +12,7 @@ import {
   adjustElementCoordinates,
   generateId
 } from '../utils/elementUtils';
+import { useThemeContext } from '../context/ThemeContext';
 
 // Helper to determine mode
 type ActionType = 'drawing' | 'moving' | 'resizing' | 'none';
@@ -36,6 +37,30 @@ export const useWhiteboard = () => {
   
   const [action, setAction] = useState<ActionType>('none');
   const [selectedElement, setSelectedElement] = useState<WhiteboardElement | null>(null);
+  const { mode } = useThemeContext();
+
+  // Handle Theme Mode Color Swapping
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAppState(prev => {
+      const current = prev.toolProperties.strokeColor;
+      // If switching to Dark Mode and color is Black (invisible), swap to Orange (requested default)
+      if (mode === 'dark' && current === '#111111') {
+         return {
+            ...prev,
+            toolProperties: { ...prev.toolProperties, strokeColor: '#FF4D00' }
+         };
+      }
+      // If switching to Light Mode and color is White (invisible), swap to Black
+      if (mode === 'light' && current === '#FFFFFF') {
+         return {
+            ...prev,
+            toolProperties: { ...prev.toolProperties, strokeColor: '#111111' }
+         };
+      }
+      return prev;
+    });
+  }, [mode]);
   
   // Ref for drag state
   const dragInfo = useRef<{

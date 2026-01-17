@@ -218,7 +218,7 @@ export const WhiteboardView = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100vh', overflow: 'hidden', bgcolor: '#FFFFFF', position: 'relative' }}>
+    <Box sx={{ width: '100%', height: '100vh', overflow: 'hidden', bgcolor: 'background.default', position: 'relative' }}>
       <AppMenu />
       <Toolbar 
         activeTool={appState.tool} 

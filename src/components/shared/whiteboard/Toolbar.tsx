@@ -97,8 +97,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({ activeTool, setTool }) => {
         gap: 1,
         p: 1,
         borderRadius: 2,
-        backgroundColor: '#FFFFFF',
-        border: '1px solid #F5F5F5',
+        backgroundColor: 'background.paper',
+        border: 1,
+        borderColor: 'divider',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
         zIndex: 100,
       }}
@@ -108,10 +109,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({ activeTool, setTool }) => {
           <IconButton
             onClick={() => setTool(tool.id)}
             sx={{
-              color: activeTool === tool.id ? '#FFFFFF' : '#111111',
-              backgroundColor: activeTool === tool.id ? '#FF4D00' : 'transparent',
+              color: activeTool === tool.id ? 'common.white' : 'text.primary',
+              backgroundColor: activeTool === tool.id ? 'error.main' : 'transparent',
               '&:hover': {
-                backgroundColor: activeTool === tool.id ? '#E04400' : '#F5F5F5',
+                backgroundColor: activeTool === tool.id ? 'error.dark' : 'action.hover',
               },
               transition: 'all 0.2s',
             }}
@@ -125,10 +126,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({ activeTool, setTool }) => {
         <IconButton
           onClick={handleMenuClick}
           sx={{
-            color: isExtraToolActive ? '#FFFFFF' : '#111111',
-            backgroundColor: isExtraToolActive ? '#FF4D00' : 'transparent',
+            color: isExtraToolActive ? 'common.white' : 'text.primary',
+            backgroundColor: isExtraToolActive ? 'error.main' : 'transparent',
             '&:hover': {
-              backgroundColor: isExtraToolActive ? '#E04400' : '#F5F5F5',
+              backgroundColor: isExtraToolActive ? 'error.dark' : 'action.hover',
             },
             transition: 'all 0.2s',
           }}
@@ -145,7 +146,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ activeTool, setTool }) => {
             elevation: 0,
             sx: {
                 mt: 1.5,
-                border: '1px solid #F5F5F5',
+                border: 1,
+                borderColor: 'divider',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 '& .MuiMenuItem-root': {
                     typography: 'body2',
@@ -163,8 +165,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ activeTool, setTool }) => {
                 selected={activeTool === tool.id}
                 sx={{
                     '&.Mui-selected': {
-                        backgroundColor: '#F5F5F5',
-                        '&:hover': { backgroundColor: '#EEEEEE' },
+                        backgroundColor: 'nebula.concrete',
+                        '&:hover': { backgroundColor: 'nebula.concrete' },
                     }
                 }}
             >

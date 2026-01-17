@@ -8,6 +8,10 @@ declare module '@mui/material/styles' {
             concrete: string;
             steel: string;
             orange: string;
+            canvas: string;
+            surface: string;
+            structure: string;
+            detail: string;
         };
     }
     interface PaletteOptions {
@@ -17,17 +21,22 @@ declare module '@mui/material/styles' {
             concrete: string;
             steel: string;
             orange: string;
+            canvas: string;
+            surface: string;
+            structure: string;
+            detail: string;
         };
     }
 }
 
-export const theme = createTheme({
+export const getTheme = (mode: 'light' | 'dark') => createTheme({
     palette: {
+        mode,
         primary: {
-            main: '#111111', // Carbon Black
+            main: mode === 'light' ? '#111111' : '#FFFFFF', // Carbon Black / Nebula White
         },
         secondary: {
-            main: '#333333', // Steel Grey
+            main: mode === 'light' ? '#333333' : '#F5F5F5', // Steel Grey / Concrete Grey
         },
         error: {
             main: '#FF4D00', // Flare Orange
@@ -36,12 +45,12 @@ export const theme = createTheme({
             main: '#FF4D00', // Flare Orange (as alert/action)
         },
         background: {
-            default: '#FFFFFF', // Nebula White
-            paper: '#F5F5F5', // Concrete Grey structure
+            default: mode === 'light' ? '#FFFFFF' : '#111111', // Nebula White / Carbon Black
+            paper: mode === 'light' ? '#FFFFFF' : '#333333', // Nebula White / Steel Grey (Surfaces)
         },
         text: {
-            primary: '#111111',
-            secondary: '#333333',
+            primary: mode === 'light' ? '#111111' : '#FFFFFF',
+            secondary: mode === 'light' ? '#333333' : '#F5F5F5',
         },
         nebula: {
             white: '#FFFFFF',
@@ -49,6 +58,11 @@ export const theme = createTheme({
             concrete: '#F5F5F5',
             steel: '#333333',
             orange: '#FF4D00',
+            // Semantic roles
+            canvas: mode === 'light' ? '#FFFFFF' : '#111111',
+            surface: mode === 'light' ? '#111111' : '#FFFFFF', // Contrast surface
+            structure: mode === 'light' ? '#F5F5F5' : '#333333',
+            detail: mode === 'light' ? '#333333' : '#F5F5F5',
         },
     },
     typography: {
@@ -64,32 +78,42 @@ export const theme = createTheme({
             fontWeight: 600,
             textTransform: 'none',
         },
-        // Use Roboto Mono for specific class-based overrides or variants if added
     },
     components: {
         MuiButton: {
             styleOverrides: {
                 root: {
-                    borderRadius: 4, // Sharp/Slightly rounded
+                    borderRadius: 4,
                     boxShadow: 'none',
                     '&:hover': {
                         boxShadow: 'none',
                     },
                 },
                 containedPrimary: {
-                    backgroundColor: '#111111',
-                    color: '#FFFFFF',
+                    backgroundColor: mode === 'light' ? '#111111' : '#FFFFFF',
+                    color: mode === 'light' ? '#FFFFFF' : '#111111',
                     '&:hover': {
-                        backgroundColor: '#333333', // Slight lighten on hover? Or keep distinct?
+                        backgroundColor: mode === 'light' ? '#333333' : '#F5F5F5',
                     },
                 },
             },
         },
         MuiPaper: {
             styleOverrides: {
-                root: { // concrete grey for structural elements often
-                    // Default paper might be white or concrete depending on context.
-                    // keeping default 'paper' background from palette
+                root: {
+                    backgroundImage: 'none', // Disable overlay in dark mode
+                    backgroundColor: mode === 'light' ? '#FFFFFF' : '#333333', // Explicit surface color
+                    borderColor: mode === 'light' ? '#F5F5F5' : '#111111', // Borders should be subtle
+                }
+            }
+        },
+        MuiIconButton: {
+            styleOverrides: {
+                root: {
+                    color: mode === 'light' ? '#111111' : '#FFFFFF',
+                    '&:hover': {
+                        backgroundColor: mode === 'light' ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.08)',
+                    }
                 }
             }
         }

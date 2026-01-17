@@ -7,10 +7,14 @@ import {
   GitHub as GitHubIcon,
   Save as SaveIcon,
   FolderOpen as FolderOpenIcon,
+  DarkMode,
+  LightMode,
 } from '@mui/icons-material';
+import { useThemeContext } from '../../../context/ThemeContext';
 
 export const AppMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { mode, toggleTheme } = useThemeContext();
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,7 +38,7 @@ export const AppMenu: React.FC = () => {
           top: 20,
           left: 20,
           zIndex: 100,
-          color: '#111111',
+          color: 'text.primary',
           '&:hover': {
             backgroundColor: 'transparent',
             opacity: 0.7,
@@ -57,9 +61,12 @@ export const AppMenu: React.FC = () => {
           sx: {
             mt: 1,
             borderRadius: 2,
-            border: '1px solid #F5F5F5',
+            border: 1,
+            borderColor: mode === 'light' ? 'nebula.concrete' : 'nebula.steel', // Dynamic border
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
             minWidth: 200,
+            bgcolor: 'background.paper',
+            color: 'text.primary',
           }
         }}
       >
@@ -93,6 +100,13 @@ export const AppMenu: React.FC = () => {
             <GitHubIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>GitHub</ListItemText>
+        </MenuItem>
+        <Divider sx={{ my: 0.5 }} />
+        <MenuItem onClick={() => { toggleTheme(); handleClose(); }}>
+          <ListItemIcon>
+            {mode === 'dark' ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText>{mode === 'dark' ? 'Light Mode' : 'Dark Mode'}</ListItemText>
         </MenuItem>
       </Menu>
     </>

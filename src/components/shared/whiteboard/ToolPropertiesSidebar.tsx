@@ -9,14 +9,8 @@ interface ToolPropertiesSidebarProps {
   onChange: (key: keyof ToolProperties, value: string | number) => void;
 }
 
-const COLORS = [
-  '#111111', // Carbon Black
-  '#FF4D00', // Flare Orange
-  '#1976D2', // Blue
-  '#388E3C', // Green
-  '#D32F2F', // Red
-  '#FBC02D', // Yellow
-];
+import { useThemeContext } from '../../../context/ThemeContext';
+// Colors moved inside component or memoized based on theme
 
 const FONTS = [
   'Montserrat',
@@ -31,6 +25,16 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
   properties,
   onChange,
 }) => {
+  const { mode } = useThemeContext();
+  
+  const COLORS = [
+    mode === 'light' ? '#111111' : '#FFFFFF', // Swap Black/White based on theme for visibility
+    '#FF4D00', // Flare Orange
+    '#1976D2', // Blue
+    '#388E3C', // Green
+    '#D32F2F', // Red
+    '#FBC02D', // Yellow
+  ];
   if (activeTool === 'selection' && !properties) return null; // Or show nothing if nothing selected? 
   // Actually hook ensures properties are populated from selection.
   
@@ -59,8 +63,9 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
         gap: 3,
         p: 2,
         borderRadius: 2,
-        backgroundColor: '#FFFFFF',
-        border: '1px solid #F5F5F5',
+        backgroundColor: 'background.paper',
+        border: 1,
+        borderColor: 'divider',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
         zIndex: 90,
         width: '260px',
@@ -68,7 +73,7 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
         overflowY: 'auto'
       }}
     >
-      <Typography variant="overline" sx={{ color: '#999', fontWeight: 600, letterSpacing: 1 }}>
+      <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 600, letterSpacing: 1 }}>
         Properties
       </Typography>
 
@@ -84,7 +89,8 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
                         size="small"
                         sx={{
                             p: 0.5,
-                            border: properties.strokeColor === color ? '2px solid #111' : '2px solid transparent',
+                            border: properties.strokeColor === color ? 2 : 2,
+                            borderColor: properties.strokeColor === color ? 'text.primary' : 'transparent',
                             transition: 'all 0.2s',
                         }}
                     >
@@ -116,7 +122,7 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
                 max={20}
                 onChange={(_, val) => onChange('strokeWidth', val as number)}
                 sx={{
-                    color: '#111',
+                    color: 'primary.main',
                     '& .MuiSlider-thumb': {
                         width: 16,
                         height: 16,
@@ -140,7 +146,7 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
             max={100}
             onChange={(_, val) => onChange('opacity', val as number)}
             sx={{
-                color: '#111',
+                color: 'primary.main',
             }}
          />
       </Box>
@@ -157,13 +163,13 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
                         sx={{
                             fontFamily: properties.fontFamily,
                             '& .MuiOutlinedInput-notchedOutline': {
-                                borderColor: '#E0E0E0',
+                                borderColor: 'divider',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: '#111',
+                                borderColor: 'text.primary',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                borderColor: '#111',
+                                borderColor: 'text.primary',
                             },
                         }}
                     >
@@ -186,7 +192,7 @@ export const ToolPropertiesSidebar: React.FC<ToolPropertiesSidebarProps> = ({
                     max={72}
                     step={2}
                     onChange={(_, val) => onChange('fontSize', val as number)}
-                    sx={{ color: '#111' }}
+                    sx={{ color: 'primary.main' }}
                  />
             </Box>
           </>
